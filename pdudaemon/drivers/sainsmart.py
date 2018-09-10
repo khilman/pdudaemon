@@ -63,4 +63,15 @@ class Sainsmart(LocalBase):
         if (val >= 0):
             url = self.url_base + "%02d" % val
             log.debug("HTTP GET at %s" % url)
-            requests.get(url)
+            try:
+                requests.get(url)
+            except requests.exceptions.Timeout:
+                # Maybe set up for a retry, or continue in a retry loop
+                continue
+            except requests.exceptions.TooManyRedirects:
+                # Tell the user their URL was bad and try a different one
+                continue
+            except requests.exceptions.RequestException as e:
+                log.debug("HTTP GET failure", e)
+                continue
+            
